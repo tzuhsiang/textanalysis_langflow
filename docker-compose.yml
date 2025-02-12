@@ -7,4 +7,7 @@ services:
       - .:/app
     environment:
       - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
     restart: always

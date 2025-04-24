@@ -1,14 +1,14 @@
 # **Streamlit Text Analysis Using LangFlow**
 
 ## **📌 專案簡介**
-這是一個使用 **Streamlit** 開發的 **對話分析應用**，並使用 **LangFlow API** 進行 **對話分析**。應用已經 **Docker 容器化**，可以快速部署。
+這是一個使用 **Streamlit** 開發的 **對話分析應用**，並使用 **LangFlow API** 進行 **對話分析與情緒分析**。應用已經 **Docker 容器化**，可以快速部署。
 
 ## **⚡ 功能特色**
 ✅ 使用 **Streamlit** 建立互動式對話介面  
 ✅ 透過 **LangFlow API** 進行對話分析  
+✅ 支援對話情緒分析功能  
 ✅ **Docker 容器化**，可跨平台部署  
 ✅ **Docker Compose** 支援，方便管理  
-
 
 ## 系統介面與分析結果(介接LangFlow對話摘要)
 ![網站介面](images/demo.png)
@@ -19,13 +19,20 @@
 ---
 ## **📂 專案目錄結構**
 ```
-textanalysis/
+textanalysis_langflow/
 │── app.py                 # Streamlit 應用主程式
 │── requirements.txt       # Python 依賴套件
 │── Dockerfile             # Docker 映像檔配置
-│── docker-compose.yml     # Docker Compose 配置（可選）
-│── README.md              # 專案說明文件
-└── images                 # 系統範例截圖
+│── docker-compose.yml     # Docker Compose 配置
+│── README.md             # 專案說明文件
+│── images/               # 系統範例截圖
+│── flows/                # LangFlow 流程定義
+│   └── Emotion.json     # 情緒分析流程
+│── env/                 # 環境配置目錄
+│   ├── network.env      # 網路環境配置
+│   └── network.env.sample # 環境配置範本
+│── langflow-data/       # LangFlow 數據存儲
+└── langflow-postgres/   # PostgreSQL 數據目錄
 ```
 
 ---
@@ -76,12 +83,12 @@ streamlit run app.py
 ---
 ## **⚙️ 技術棧**
 - **Streamlit** - 建立 Web 應用
-- **LangFlow** - 對話分析推論
+- **LangFlow** - 對話分析與情緒分析
 - **Docker** - 容器化應用
+- **PostgreSQL** - 數據持久化存儲
 
 ---
 ## **📜 版權 & 授權**
 本專案以 **MIT License** 授權，你可以自由修改、分發，但請註明來源。
 
 🚀 **歡迎貢獻！有任何問題，請提交 Issue 或 PR！**
-

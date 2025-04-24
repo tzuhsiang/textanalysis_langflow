@@ -11,8 +11,6 @@ load_dotenv()
 langchain_api_url = os.getenv("LANGCHAIN_API_URL")
 api_key = os.getenv("API_KEY")
 
-
-
 # 設定頁面標題
 st.set_page_config(page_title="對話輸入介面", layout="wide")
 

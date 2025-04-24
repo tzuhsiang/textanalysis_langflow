@@ -7,7 +7,67 @@ services:
       - .:/app
     environment:
       - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
-      - HTTP_PROXY=${HTTP_PROXY}
-      - HTTPS_PROXY=${HTTPS_PROXY}
-      - NO_PROXY=${NO_PROXY}
+    env_file:
+      - ./env/network.env
+      - ./env/app.env
     restart: always
+
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: langflow
+    ports:
+      - "7860:7860"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
+      - LANGFLOW_CONFIG_DIR=/var/lib/langflow
+    env_file:
+      - ./env/network.env
+    volumes:
+      - ./langflow-data:/var/lib/langflow
+    networks:
+      - langflow_network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: langflow_postgres
+    environment:
+      POSTGRES_USER: langflow
+      POSTGRES_PASSWORD: langflow
+      POSTGRES_DB: langflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./langflow-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "langflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - langflow_network
+    restart: unless-stopped
+
+  import_flow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - HTTP_PROXY
+        - HTTPS_PROXY
+        - http_proxy
+        - https_proxy
+    container_name: langflow_import_flow
+    volumes:
+      - ./flows:/app/flows
+    depends_on:
+      langflow:
+        condition: service_started
+    env_file:
+      - ./env/network.env
+    networks:
+      - langflow_network
+    restart: "no"

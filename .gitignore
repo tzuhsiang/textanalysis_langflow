@@ -1,1 +1,9 @@
 .env
+
+env/network.env
+env/app.env
+
+flows/*
+
+langflow-postgres
+langflow-data

@@ -10,6 +10,8 @@ services:
     env_file:
       - ./env/network.env
       - ./env/app.env
+    networks:
+      - langflow_network
     restart: always
 
   langflow:
@@ -71,3 +73,7 @@ services:
     networks:
       - langflow_network
     restart: "no"
+
+networks:
+  langflow_network:
+    driver: bridge

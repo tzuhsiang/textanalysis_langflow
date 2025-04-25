@@ -7,9 +7,8 @@ import os
 # 讀取 .env 檔案中的環境變數
 load_dotenv()
 
-# 從環境變數讀取 Langchain API URL 和 API 金鑰
+# 從環境變數讀取 Langchain API URL
 langchain_api_url = os.getenv("LANGCHAIN_API_URL")
-api_key = os.getenv("API_KEY")
 
 # 設定頁面標題
 st.set_page_config(page_title="對話輸入介面", layout="wide")
@@ -46,12 +45,12 @@ with col1:
             st.session_state.latest_input = user_input  # 儲存輸入內容
             
             # 呼叫 Langchain API 進行對話摘要分析
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+            headers = {"Content-Type": "application/json"}
             data = {
                 "input_value": user_input
             }
 
-            # 發送 POST 請求給 Langchain API
+            # 發送 POST 請求給 Langflow API
             response = requests.post(langchain_api_url, headers=headers, json=data)
             response.raise_for_status()  # 若發生錯誤會觸發例外
 

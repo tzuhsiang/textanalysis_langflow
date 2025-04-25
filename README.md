@@ -25,12 +25,15 @@ textanalysis_langflow/
 │── Dockerfile             # Docker 映像檔配置
 │── docker-compose.yml     # Docker Compose 配置
 │── README.md             # 專案說明文件
+│── setup_flow.sh         # 流程設定腳本
+│── get_flow_id.py        # 流程 ID 獲取工具
+│── import_flow.py        # 流程導入工具
 │── images/               # 系統範例截圖
 │── flows/                # LangFlow 流程定義
 │   └── Emotion.json     # 情緒分析流程
 │── env/                 # 環境配置目錄
 │   ├── network.env      # 網路環境配置
-│   └── network.env.sample # 環境配置範本
+│   └── app.env         # 應用程式環境配置
 │── langflow-data/       # LangFlow 數據存儲
 └── langflow-postgres/   # PostgreSQL 數據目錄
 ```
@@ -38,7 +41,35 @@ textanalysis_langflow/
 ---
 ## **🚀 快速開始**
 
-### **1️⃣ 安裝相依套件（非 Docker 方式）**
+### **1️⃣ 使用 Docker Compose 部署（推薦）**
+
+1. **建置和啟動服務**：
+   ```bash
+   docker-compose build
+   docker-compose up -d
+   ```
+
+2. **設定 LangFlow 流程**：
+   ```bash
+   ./setup_flow.sh
+   ```
+   此腳本會：
+   - 等待服務完全啟動
+   - 導入情緒分析流程
+   - 獲取流程 ID
+   - 顯示設定說明
+
+3. **更新流程 ID**：
+   使用上一步獲取的流程 ID 更新 `env/app.env` 中的 URL。
+
+4. **重新啟動應用**：
+   ```bash
+   docker-compose restart analysis_app
+   ```
+
+應用將在 **http://localhost:8501** 運行。
+
+### **2️⃣ 本機開發模式**
 如果你想在本機運行，請確保已安裝 Python 3，並執行：
 ```bash
 pip install -r requirements.txt
@@ -48,37 +79,21 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
-應用將運行在 **http://localhost:8501**。
 
 ---
-### **2️⃣ 使用 Docker 部署**
+## **💡 常見問題**
 
-#### **🔹 方法 1：直接使用 Docker**
-1. **建置 Docker 映像**：
-   ```bash
-   docker build -t streamlit-textanalysis .
-   ```
+### API 連接錯誤
+如果遇到 API 連接錯誤，請確保：
+1. 所有服務都已正常啟動
+2. 已正確執行 setup_flow.sh 並更新流程 ID
+3. env/app.env 中的 URL 設定正確
 
-2. **運行 Docker 容器**：
-   ```bash
-   docker run -it --rm -p 8501:8501 streamlit-textanalysis
-   ```
-
-應用將在 **http://localhost:8501** 運行。
-
-#### **🔹 方法 2：使用 Docker Compose（推薦）**
-0. **建置映像檔**：
-   ```bash
-   docker-compose build
-
-1. **啟動容器**：
-   ```bash
-   docker-compose up -d
-   ```
-2. **停止容器**：
-   ```bash
-   docker-compose down
-   ```
+### 流程 ID 更新
+如果需要重新獲取流程 ID：
+```bash
+docker-compose run --rm -v $(pwd)/get_flow_id.py:/app/get_flow_id.py analysis_app python /app/get_flow_id.py
+```
 
 ---
 ## **⚙️ 技術棧**

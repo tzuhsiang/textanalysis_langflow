@@ -7,8 +7,7 @@ import os
 import time
 
 
-# URL="http://langflow:7860"
-URL="http://localhost:7860"
+URL="http://langflow:7860"
 
 def wait_for_langflow():
     max_retries = 30

@@ -7,7 +7,62 @@ services:
       - .:/app
     environment:
       - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
-      - HTTP_PROXY=${HTTP_PROXY}
-      - HTTPS_PROXY=${HTTPS_PROXY}
-      - NO_PROXY=${NO_PROXY}
+    env_file:
+      - ./env/network.env
+      - ./env/app.env
+    networks:
+      - langflow_network
     restart: always
+
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: langflow
+    ports:
+      - "7860:7860"
+    environment:
+      - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
+      - LANGFLOW_CONFIG_DIR=/var/lib/langflow
+    env_file:
+      - ./env/network.env
+    volumes:
+      - ./langflow-data:/var/lib/langflow
+    networks:
+      - langflow_network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: langflow_postgres
+    environment:
+      POSTGRES_USER: langflow
+      POSTGRES_PASSWORD: langflow
+      POSTGRES_DB: langflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./langflow-postgres:/var/lib/postgresql/data
+    networks:
+      - langflow_network
+    restart: unless-stopped
+
+  import_flow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - HTTP_PROXY
+        - HTTPS_PROXY
+        - http_proxy
+        - https_proxy
+    container_name: langflow_import_flow
+    volumes:
+      - ./flows:/app/flows
+    env_file:
+      - ./env/network.env
+    networks:
+      - langflow_network
+    restart: "no"
+
+networks:
+  langflow_network:
+    driver: bridge

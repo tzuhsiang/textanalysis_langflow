@@ -4,6 +4,7 @@ import json
 import glob
 from dotenv import load_dotenv
 import os
+import time
 
 # 設定頁面標題（必須是第一個 Streamlit 命令）
 st.set_page_config(page_title="對話輸入介面", layout="wide")
@@ -95,24 +96,34 @@ with col1:
             try:
                 # 對話摘要分析
                 st.info("🔄 進行對話摘要分析...")
+
+                start_time = time.time()
                 response1 = requests.post(langchain_api_url, headers=headers, json=data)
                 response1.raise_for_status()
                 summary = response1.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取對話摘要")
                 st.session_state.summary = summary
+                st.session_state.summary_time = time.time() - start_time
+                st.session_state.summary_type = type(summary).__name__
 
                 # 意圖分析
                 st.info("🔄 進行意圖分析...")
+                start_time = time.time()
                 response2 = requests.post(langchain_api_url_2, headers=headers, json=data)
                 response2.raise_for_status()
                 intention = response2.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取意圖分析")
                 st.session_state.intention = intention
+                st.session_state.intention_time = time.time() - start_time
+                st.session_state.intention_type = type(intention).__name__
 
                 # 情緒分析
                 st.info("🔄 進行情緒分析...")
+                start_time = time.time()
                 response3 = requests.post(langchain_api_url_3, headers=headers, json=data)
                 response3.raise_for_status()
                 emotion = response3.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取情緒分析")
                 st.session_state.emotion = emotion
+                st.session_state.emotion_time = time.time() - start_time
+                st.session_state.emotion_type = type(emotion).__name__
                 
                 st.success("✅ 分析完成！")
                 st.rerun()
@@ -139,16 +150,22 @@ with col2:
     if "summary" in st.session_state:
         with st.container():
             st.subheader("📝 對話摘要")
+            st.info(f"分析時間: {st.session_state.summary_time:.2f} 秒")
+            st.write(f"回傳資料型別: {st.session_state.summary_type}")
             st.info(st.session_state.summary)
 
     if "intention" in st.session_state:
         with st.container():
             st.subheader("🎯 意圖分析")
+            st.info(f"分析時間: {st.session_state.intention_time:.2f} 秒")
+            st.write(f"回傳資料型別: {st.session_state.intention_type}")
             st.warning(st.session_state.intention)
 
     if "emotion" in st.session_state:
         with st.container():
             st.subheader("😊 情緒分析")
+            st.info(f"分析時間: {st.session_state.emotion_time:.2f} 秒")
+            st.write(f"回傳資料型別: {st.session_state.emotion_type}")
             try:
                 # 解析情緒分析結果中的數值
                 emotion_value = float(st.session_state.emotion)

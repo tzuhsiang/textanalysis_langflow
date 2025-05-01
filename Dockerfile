@@ -4,9 +4,17 @@ FROM python:3.10
 # 設定工作目錄
 WORKDIR /app
 
-# 設定代理伺服器
-ENV http_proxy=http://10.160.3.88:8080
-ENV https_proxy=http://10.160.3.88:8080
+# 接收代理設定的構建參數
+ARG http_proxy
+ARG https_proxy
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+
+# 設定代理環境變數
+ENV http_proxy=$http_proxy \
+    https_proxy=$https_proxy \
+    HTTP_PROXY=$HTTP_PROXY \
+    HTTPS_PROXY=$HTTPS_PROXY
 
 
 # 複製 requirements.txt 並安裝所需套件

@@ -4,7 +4,8 @@
 import requests
 import json
 
-URL="http://langflow:7860"
+# 從環境變數讀取 URL
+URL = os.getenv("LANGFLOW_URL")
 
 def get_flows():
     """獲取所有 flows 的資訊"""

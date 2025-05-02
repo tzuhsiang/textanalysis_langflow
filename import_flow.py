@@ -5,7 +5,7 @@ import json
 import os
 import time
 
-# 從環境變數讀取所有 API URL
+# 從環境變數讀取 URL
 URL = os.getenv("LANGFLOW_URL")
 
 def wait_for_langflow():

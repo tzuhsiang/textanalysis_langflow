@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import requests
 import json
 import os
 import time
 
-
-URL="http://langflow:7860"
+# 從環境變數讀取 URL
+URL = os.getenv("LANGFLOW_URL")
 
 def wait_for_langflow():
     max_retries = 30

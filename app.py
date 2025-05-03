@@ -4,6 +4,7 @@ import json
 import glob
 from dotenv import load_dotenv
 import os
+import time
 
 # 設定頁面標題（必須是第一個 Streamlit 命令）
 st.set_page_config(page_title="對話輸入介面", layout="wide")
@@ -12,9 +13,9 @@ st.set_page_config(page_title="對話輸入介面", layout="wide")
 load_dotenv("/app/env/app.env")
 
 # 從環境變數讀取所有 API URL
-langchain_api_url = os.getenv("LANGCHAIN_API_URL")  # 對話摘要
-langchain_api_url_2 = os.getenv("LANGCHAIN_API_URL_2")  # 意圖分析
-langchain_api_url_3 = os.getenv("LANGCHAIN_API_URL_3")  # 情緒分析
+langflow_api_1 = os.getenv("LANGFLOW_API_1")  # 對話摘要
+langflow_api_2 = os.getenv("LANGFLOW_API_2")  # 意圖分析
+langflow_api_3 = os.getenv("LANGFLOW_API_3")  # 情緒分析
 
 # 使用 CSS 調整頁面寬度
 st.markdown("""
@@ -95,24 +96,34 @@ with col1:
             try:
                 # 對話摘要分析
                 st.info("🔄 進行對話摘要分析...")
-                response1 = requests.post(langchain_api_url, headers=headers, json=data)
+
+                start_time = time.time()
+                response1 = requests.post(langflow_api_1, headers=headers, json=data)
                 response1.raise_for_status()
                 summary = response1.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取對話摘要")
                 st.session_state.summary = summary
+                st.session_state.summary_time = time.time() - start_time
+                st.session_state.summary_type = type(summary).__name__
 
                 # 意圖分析
                 st.info("🔄 進行意圖分析...")
-                response2 = requests.post(langchain_api_url_2, headers=headers, json=data)
+                start_time = time.time()
+                response2 = requests.post(langflow_api_2, headers=headers, json=data)
                 response2.raise_for_status()
                 intention = response2.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取意圖分析")
                 st.session_state.intention = intention
+                st.session_state.intention_time = time.time() - start_time
+                st.session_state.intention_type = type(intention).__name__
 
                 # 情緒分析
                 st.info("🔄 進行情緒分析...")
-                response3 = requests.post(langchain_api_url_3, headers=headers, json=data)
+                start_time = time.time()
+                response3 = requests.post(langflow_api_3, headers=headers, json=data)
                 response3.raise_for_status()
                 emotion = response3.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取情緒分析")
                 st.session_state.emotion = emotion
+                st.session_state.emotion_time = time.time() - start_time
+                st.session_state.emotion_type = type(emotion).__name__
                 
                 st.success("✅ 分析完成！")
                 st.rerun()
@@ -139,16 +150,19 @@ with col2:
     if "summary" in st.session_state:
         with st.container():
             st.subheader("📝 對話摘要")
+            st.write(f"分析時間: {st.session_state.summary_time:.2f} 秒, 回傳資料型別: {st.session_state.summary_type}")
             st.info(st.session_state.summary)
 
     if "intention" in st.session_state:
         with st.container():
             st.subheader("🎯 意圖分析")
+            st.write(f"分析時間: {st.session_state.intention_time:.2f} 秒, 回傳資料型別: {st.session_state.intention_type}")
             st.warning(st.session_state.intention)
 
     if "emotion" in st.session_state:
         with st.container():
             st.subheader("😊 情緒分析")
+            st.write(f"分析時間: {st.session_state.emotion_time:.2f} 秒, 回傳資料型別: {st.session_state.emotion_type}")
             try:
                 # 解析情緒分析結果中的數值
                 emotion_value = float(st.session_state.emotion)

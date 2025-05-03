@@ -4,6 +4,7 @@ env/network.env
 env/app.env
 
 flows/*
+!flows/.gitkeep
 
 langflow-postgres
 langflow-data

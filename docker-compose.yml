@@ -1,6 +1,13 @@
 services:
   analysis_app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - HTTP_PROXY
+        - HTTPS_PROXY
+        - http_proxy
+        - https_proxy
     ports:
       - "8501:8501"
     volumes:

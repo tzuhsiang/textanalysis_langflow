@@ -203,4 +203,93 @@ if st.session_state.current_page == "對話分析":
 # 系統設定頁面
 elif st.session_state.current_page == "系統設定":
     st.header("⚙️ 系統設定")
-    st.info("此頁面用於設定系統參數，目前尚在開發中...")
+    
+    # 顯示當前設定
+    st.subheader("🔗 API 端點設定")
+    st.write("在此設定各個分析功能的 API 端點")
+
+    # 建立設定表單
+    with st.form("api_settings"):
+        # Langflow 基礎 URL
+        base_url = st.text_input(
+            "Langflow 基礎 URL",
+            value=os.getenv("LANGFLOW_URL", "http://langflow:7860"),
+            help="Langflow 服務的基礎 URL"
+        )
+        
+        # 對話摘要 API
+        api_1 = st.text_input(
+            "對話摘要 API",
+            value=os.getenv("LANGFLOW_API_1", ""),
+            help="用於對話摘要分析的 API 端點"
+        )
+        
+        # 意圖分析 API
+        api_2 = st.text_input(
+            "意圖分析 API",
+            value=os.getenv("LANGFLOW_API_2", ""),
+            help="用於意圖分析的 API 端點"
+        )
+        
+        # 情緒分析 API
+        api_3 = st.text_input(
+            "情緒分析 API",
+            value=os.getenv("LANGFLOW_API_3", ""),
+            help="用於情緒分析的 API 端點"
+        )
+
+        # 儲存按鈕
+        if st.form_submit_button("💾 儲存設定"):
+            try:
+
+                # 準備新的環境變數內容
+                env_content = f"""# langflow 網址
+LANGFLOW_URL="{base_url}"
+
+#對話摘要
+LANGFLOW_API_1="{api_1}"
+
+#意圖分析
+LANGFLOW_API_2="{api_2}"
+
+#情緒分析
+LANGFLOW_API_3="{api_3}"
+"""
+                # 寫入檔案
+                with open("/app/env/app.env", "w", encoding="utf-8") as f:
+                    f.write(env_content)
+                
+                # 重新載入環境變數
+                load_dotenv("/app/env/app.env", override=True)
+                
+                st.success("✅ 設定已成功儲存！")
+                st.info("🔄 請重新整理頁面以套用新設定")
+            except Exception as e:
+                st.error(f"❌ 儲存設定時發生錯誤: {str(e)}")
+
+    # 顯示設定說明
+    with st.expander("ℹ️ 設定說明"):
+        st.markdown("""
+        ### 設定項目說明
+        
+        1. **Langflow 基礎 URL**
+           - Langflow 服務的基本網址
+           - 預設值: `http://langflow:7860`
+        
+        2. **對話摘要 API**
+           - 用於分析並摘要對話內容的 API 端點
+           - 格式: `[基礎 URL]/api/v1/run/[Flow ID]?stream=false`
+        
+        3. **意圖分析 API**
+           - 用於分析對話意圖的 API 端點
+           - 格式: `[基礎 URL]/api/v1/run/[Flow ID]?stream=false`
+        
+        4. **情緒分析 API**
+           - 用於分析對話情緒的 API 端點
+           - 格式: `[基礎 URL]/api/v1/run/[Flow ID]?stream=false`
+        
+        ### 注意事項
+        - 修改設定後需要重新整理頁面才會生效
+        - 請確保輸入的 API 端點格式正確
+        - Flow ID 可以從 Langflow 介面中獲取
+        """)

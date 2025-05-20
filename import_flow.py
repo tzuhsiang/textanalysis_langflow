@@ -4,9 +4,10 @@ import requests
 import json
 import os
 import time
-
+ 
 # 從環境變數讀取 URL
 URL = os.getenv("LANGFLOW_URL")
+# URL="http://localhost:7860"
 
 def wait_for_langflow():
     max_retries = 30

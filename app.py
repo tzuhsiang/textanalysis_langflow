@@ -16,6 +16,7 @@ load_dotenv("/app/env/app.env")
 langflow_api_1 = os.getenv("LANGFLOW_API_1")  # 對話摘要
 langflow_api_2 = os.getenv("LANGFLOW_API_2")  # 意圖分析
 langflow_api_3 = os.getenv("LANGFLOW_API_3")  # 情緒分析
+langflow_api_4 = os.getenv("LANGFLOW_API_4")  # 關鍵字分析
 
 # 使用 CSS 調整頁面寬度和側邊欄樣式
 st.markdown("""
@@ -149,7 +150,19 @@ if st.session_state.current_page == "對話分析":
                     st.session_state.emotion = emotion
                     st.session_state.emotion_time = time.time() - start_time
                     st.session_state.emotion_type = type(emotion).__name__
-                    
+
+
+                    # 關鍵字分析
+                    st.info("🔄 進行關鍵字分析...")
+                    start_time = time.time()
+                    response2 = requests.post(langflow_api_4, headers=headers, json=data)
+                    response2.raise_for_status()
+                    keyword = response2.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取關鍵字")
+                    st.session_state.keyword = keyword
+                    st.session_state.keyword_time = time.time() - start_time
+                    st.session_state.keyword_type = type(keyword).__name__
+
+
                     st.success("✅ 分析完成！")
                     st.rerun()
 
@@ -234,6 +247,13 @@ if st.session_state.current_page == "對話分析":
                 except Exception as e:
                     # 如果解析失敗，顯示原始文字
                     st.success(st.session_state.emotion)
+        
+
+        if "keyword" in st.session_state:
+            with st.container():
+                st.subheader("🔍 關鍵字分析")
+                st.write(f"分析時間: {st.session_state.keyword_time:.2f} 秒, 回傳資料型別: {st.session_state.keyword_type}")
+                st.warning(st.session_state.keyword)
 
 # 系統設定頁面
 elif st.session_state.current_page == "系統設定":

@@ -190,12 +190,47 @@ if st.session_state.current_page == "對話分析":
                 st.write(f"分析時間: {st.session_state.emotion_time:.2f} 秒, 回傳資料型別: {st.session_state.emotion_type}")
                 try:
                     # 解析情緒分析結果中的數值
-                    emotion_value = float(st.session_state.emotion)
-                    emotion_percent = emotion_value * 100
-                    
-                    # 顯示進度條和百分比
-                    st.progress(emotion_value)
-                    st.success(f"負面情緒比例: {emotion_percent:.1f}%")
+                    # 這裡假設情緒分析結果是 JSON 格式的字串
+                    # 例如: {"positive": 0.8, "neutral": 0.1, "negative": 0.1}
+                    # 將 JSON 字串轉換為 Python 字典
+                    # 如果情緒分析結果是字典格式，則直接使用
+
+                    st.success(st.session_state.emotion)
+
+                    if isinstance(st.session_state.emotion, str):
+                        emotion_data = json.loads(st.session_state.emotion)
+                    else:
+                        emotion_data = st.session_state.emotion
+
+                    positive = emotion_data.get("positive", 0)
+                    neutral = emotion_data.get("neutral", 0)
+                    negative = emotion_data.get("negative", 0)
+
+                    #顯示進度條與百分比
+                    # st.progress(positive)
+                    # st.success(f"正面情緒比例: {positive*100:.1f}%")
+                    # st.progress(neutral)
+                    # st.success(f"中性情緒比例: {neutral*100:.1f}%")
+                    # st.progress(negative)
+                    # st.success(f"負面情緒比例: {negative*100:.1f}%")
+  
+                    # 合併成一條彩色進度條
+                    bar_html = f"""
+                    <div style='display: flex; height: 32px; width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #DDD; margin-bottom: 8px;'>
+                    <div style='width: {positive*100}%; background: #4CAF50;'></div>
+                    <div style='width: {neutral*100}%; background: #2196F3;'></div>
+                    <div style='width: {negative*100}%; background: #F44336;'></div>
+                    </div>
+                    <div>
+                    <span style='color:#66b3ff;'>正面 {positive*100:.1f}%</span>　
+                    <span style='color:#ffcc99;'>中性 {neutral*100:.1f}%</span>　
+                    <span style='color:#ff9999;'>負面 {negative*100:.1f}%</span>
+                    </div>
+                    """
+                    st.markdown(bar_html, unsafe_allow_html=True)
+
+
+
                 except Exception as e:
                     # 如果解析失敗，顯示原始文字
                     st.success(st.session_state.emotion)
@@ -244,17 +279,17 @@ elif st.session_state.current_page == "系統設定":
 
                 # 準備新的環境變數內容
                 env_content = f"""# langflow 網址
-LANGFLOW_URL="{base_url}"
+                LANGFLOW_URL="{base_url}"
 
-#對話摘要
-LANGFLOW_API_1="{api_1}"
+                #對話摘要
+                LANGFLOW_API_1="{api_1}"
 
-#意圖分析
-LANGFLOW_API_2="{api_2}"
+                #意圖分析
+                LANGFLOW_API_2="{api_2}"
 
-#情緒分析
-LANGFLOW_API_3="{api_3}"
-"""
+                #情緒分析
+                LANGFLOW_API_3="{api_3}"
+                """
                 # 寫入檔案
                 with open("/app/env/app.env", "w", encoding="utf-8") as f:
                     f.write(env_content)

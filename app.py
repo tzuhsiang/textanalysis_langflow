@@ -17,6 +17,8 @@ langflow_api_1 = os.getenv("LANGFLOW_API_1")  # 對話摘要
 langflow_api_2 = os.getenv("LANGFLOW_API_2")  # 意圖分析
 langflow_api_3 = os.getenv("LANGFLOW_API_3")  # 情緒分析
 langflow_api_4 = os.getenv("LANGFLOW_API_4")  # 關鍵字分析
+langflow_api_5 = os.getenv("LANGFLOW_API_5")  # 對話修飾
+
 
 # 使用 CSS 調整頁面寬度和側邊欄樣式
 st.markdown("""
@@ -120,13 +122,24 @@ if st.session_state.current_page == "對話分析":
 
                 # 進行所有分析
                 try:
+
+                    # 對話修飾
+                    st.info("🔄 進行對話修飾分析...")
+                    start_time = time.time()
+                    response = requests.post(langflow_api_5, headers=headers, json=data)
+                    response.raise_for_status()
+                    dialogue_refinement = response.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取對話修飾")
+                    st.session_state.dialogue_refinement = dialogue_refinement
+                    st.session_state.dialogue_refinement_time = time.time() - start_time
+                    st.session_state.dialogue_refinement_type = type(dialogue_refinement).__name__
+
                     # 對話摘要分析
                     st.info("🔄 進行對話摘要分析...")
 
                     start_time = time.time()
-                    response1 = requests.post(langflow_api_1, headers=headers, json=data)
-                    response1.raise_for_status()
-                    summary = response1.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取對話摘要")
+                    response = requests.post(langflow_api_1, headers=headers, json=data)
+                    response.raise_for_status()
+                    summary = response.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取對話摘要")
                     st.session_state.summary = summary
                     st.session_state.summary_time = time.time() - start_time
                     st.session_state.summary_type = type(summary).__name__
@@ -134,9 +147,9 @@ if st.session_state.current_page == "對話分析":
                     # 意圖分析
                     st.info("🔄 進行意圖分析...")
                     start_time = time.time()
-                    response2 = requests.post(langflow_api_2, headers=headers, json=data)
-                    response2.raise_for_status()
-                    intention = response2.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取意圖分析")
+                    response = requests.post(langflow_api_2, headers=headers, json=data)
+                    response.raise_for_status()
+                    intention = response.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取意圖分析")
                     st.session_state.intention = intention
                     st.session_state.intention_time = time.time() - start_time
                     st.session_state.intention_type = type(intention).__name__
@@ -144,9 +157,9 @@ if st.session_state.current_page == "對話分析":
                     # 情緒分析
                     st.info("🔄 進行情緒分析...")
                     start_time = time.time()
-                    response3 = requests.post(langflow_api_3, headers=headers, json=data)
-                    response3.raise_for_status()
-                    emotion = response3.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取情緒分析")
+                    response = requests.post(langflow_api_3, headers=headers, json=data)
+                    response.raise_for_status()
+                    emotion = response.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取情緒分析")
                     st.session_state.emotion = emotion
                     st.session_state.emotion_time = time.time() - start_time
                     st.session_state.emotion_type = type(emotion).__name__
@@ -155,13 +168,12 @@ if st.session_state.current_page == "對話分析":
                     # 關鍵字分析
                     st.info("🔄 進行關鍵字分析...")
                     start_time = time.time()
-                    response2 = requests.post(langflow_api_4, headers=headers, json=data)
-                    response2.raise_for_status()
-                    keyword = response2.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取關鍵字")
+                    response = requests.post(langflow_api_4, headers=headers, json=data)
+                    response.raise_for_status()
+                    keyword = response.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取關鍵字")
                     st.session_state.keyword = keyword
                     st.session_state.keyword_time = time.time() - start_time
                     st.session_state.keyword_type = type(keyword).__name__
-
 
                     st.success("✅ 分析完成！")
                     st.rerun()
@@ -180,11 +192,18 @@ if st.session_state.current_page == "對話分析":
         word_count = len(latest_text.strip())
         st.write(f"輸入字數 **{word_count}** 個字")
 
-        # 顯示原始對話內容
-        with st.expander("查看原始對話", expanded=False):
-            st.text(latest_text)
+        # # 顯示原始對話內容
+        # with st.expander("查看原始對話", expanded=False):
+        #     st.text(latest_text)
 
         # 顯示所有分析結果
+        if "dialogue_refinement" in st.session_state:
+            with st.container():
+                st.subheader("✏️ 對話修飾")
+                st.write(f"分析時間: {st.session_state.dialogue_refinement_time:.2f} 秒, 回傳資料型別: {st.session_state.dialogue_refinement_type}")
+                with st.expander("查看修飾後對話", expanded=False):
+                    st.text(st.session_state.dialogue_refinement)
+
         if "summary" in st.session_state:
             with st.container():
                 st.subheader("📝 對話摘要")
@@ -292,6 +311,20 @@ elif st.session_state.current_page == "系統設定":
             value=os.getenv("LANGFLOW_API_3", ""),
             help="用於情緒分析的 API 端點"
         )
+        # 關鍵字分析 API
+        api_4 = st.text_input(
+            "關鍵字分析 API",
+            value=os.getenv("LANGFLOW_API_4", ""),
+            help="用於關鍵字分析的 API 端點"
+        )
+
+         # 對話修飾 API
+        api_5 = st.text_input(
+            "對話修飾分析 API",
+            value=os.getenv("LANGFLOW_API_5", ""),
+            help="用於對話修飾分析的 API 端點"
+        )
+
 
         # 儲存按鈕
         if st.form_submit_button("💾 儲存設定"):

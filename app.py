@@ -21,6 +21,26 @@ langflow_api_5 = os.getenv("LANGFLOW_API_5")  # 對話修飾
 
 
 # 使用 CSS 調整頁面寬度和側邊欄樣式
+
+def format_dialogue_refinement(refinement):
+    import json
+    try:
+        if isinstance(refinement, str):
+            data = json.loads(refinement)
+        else:
+            data = refinement
+        if not isinstance(data, list):
+            return str(refinement)
+        role_map = {"agent": "客服", "customer": "民眾"}
+        lines = []
+        for item in data:
+            role = role_map.get(item.get("type", ""), item.get("type", ""))
+            time = item.get("starttime", "")
+            content = item.get("content", "")
+            lines.append(f"[{role}]  {time}\n{content}")
+        return "\n".join(lines)
+    except Exception:
+        return str(refinement)
 st.markdown("""
     <style>
         /* 調整頁面整體內容的最大寬度 */
@@ -202,7 +222,8 @@ if st.session_state.current_page == "對話分析":
                 st.subheader("✏️ 對話修飾")
                 st.write(f"分析時間: {st.session_state.dialogue_refinement_time:.2f} 秒, 回傳資料型別: {st.session_state.dialogue_refinement_type}")
                 with st.expander("查看修飾後對話", expanded=False):
-                    st.text(st.session_state.dialogue_refinement)
+                    formatted = format_dialogue_refinement(st.session_state.dialogue_refinement)
+                    st.text(formatted)
 
         if "summary" in st.session_state:
             with st.container():

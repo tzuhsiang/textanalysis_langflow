@@ -155,9 +155,9 @@ if st.session_state.current_page == "對話分析":
                     # 關鍵字分析
                     st.info("🔄 進行關鍵字分析...")
                     start_time = time.time()
-                    response2 = requests.post(langflow_api_4, headers=headers, json=data)
-                    response2.raise_for_status()
-                    keyword = response2.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取關鍵字")
+                    response4 = requests.post(langflow_api_4, headers=headers, json=data)
+                    response4.raise_for_status()
+                    keyword = response4.json()['outputs'][0]['outputs'][0]['results']['text'].get("text", "無法獲取關鍵字")
                     st.session_state.keyword = keyword
                     st.session_state.keyword_time = time.time() - start_time
                     st.session_state.keyword_type = type(keyword).__name__
@@ -292,6 +292,13 @@ elif st.session_state.current_page == "系統設定":
             value=os.getenv("LANGFLOW_API_3", ""),
             help="用於情緒分析的 API 端點"
         )
+        
+        # 關鍵字分析 API
+        api_4 = st.text_input(
+            "關鍵字分析 API",
+            value=os.getenv("LANGFLOW_API_4", ""),
+            help="用於關鍵字分析的 API 端點"
+        )
 
         # 儲存按鈕
         if st.form_submit_button("💾 儲存設定"):
@@ -309,6 +316,9 @@ elif st.session_state.current_page == "系統設定":
 
                 #情緒分析
                 LANGFLOW_API_3="{api_3}"
+                
+                #關鍵字分析
+                LANGFLOW_API_4="{api_4}"
                 """
                 # 寫入檔案
                 with open("/app/env/app.env", "w", encoding="utf-8") as f:
@@ -341,6 +351,10 @@ elif st.session_state.current_page == "系統設定":
         
         4. **情緒分析 API**
            - 用於分析對話情緒的 API 端點
+           - 格式: `[基礎 URL]/api/v1/run/[Flow ID]?stream=false`
+        
+        5. **關鍵字分析 API**
+           - 用於提取對話關鍵字的 API 端點
            - 格式: `[基礎 URL]/api/v1/run/[Flow ID]?stream=false`
         
         ### 注意事項
